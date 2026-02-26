@@ -4,23 +4,27 @@ app = Flask(__name__)
 
 students = {}
 courses = {
-    101: {
+    "C1": {
         "course_name": "Python Basics",
         "max_students": 3,
-        "enrolled_students": []
+        "enrolled_count": 0,
+        "course_count": 0
     },
-    201: {
+    "C2": {
         "course_name": "Data Structures",
         "max_students": 5,
-        "enrolled_students": []
+        "enrolled_count": 0,
+        "course_count": 0
     },
-    301: {
+    "C3": {
         "course_name": "Web Development",
         "max_students": 7,
-        "enrolled_students": []
+        "enrolled_count": 0,
+        "course_count": 0
     }
 }
 enrolled_list = {}
+enrolled_id = 100
 
 @app.route("/student", methods=["POST"])
 def add_student():
@@ -64,10 +68,41 @@ def get_courses():
         response[course_id]={
             "course_name": data["course_name"],
             "max_students": data["max_students"],
-            "enrolled_students": data["enrolled_students"]
+            "enrolled_count": data["enrolled_count"]
         }
     return (response)
 
+@app.route("/enroll", methods = ["POST"])
+def enroll():
+    global enrolled_id
+    data = request.json
+    course_id = data.get("course_id")
+    student_id = data.get("student_id")
+
+    if student_id not in students:
+            return jsonify({"error":"student does not exist"}), 400
+
+    if course_id not in courses:
+        return jsonify({"error": "course not exist"}), 400
+
+    for enrollment in enrolled_list.values():
+        if enrollment["student_id"] == student_id and enrollment["course_id"] == course_id:
+            return jsonify({"error": "student not enroll in same course twice"}), 400
+
+    course = courses[course_id]
+    if course["course_count"] >= course["max_students"]:
+        return jsonify({"error": "course is full"}), 400
+
+    enrolled_list[enrolled_id] = {
+        "student_id": student_id,
+        "course_id": course_id,
+        "course_name": data["course_name"]
+    }
+    course["course_count"] += 1
+    course["enrolled_count"] +=1
+    enrolled_id +=1
+
+    return jsonify({"status":"enrolled successfully"}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
