@@ -3,7 +3,23 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 students = {}
-courses = {}
+courses = {
+    101: {
+        "course_name": "Python Basics",
+        "max_students": 3,
+        "enrolled_students": []
+    },
+    201: {
+        "course_name": "Data Structures",
+        "max_students": 5,
+        "enrolled_students": []
+    },
+    301: {
+        "course_name": "Web Development",
+        "max_students": 7,
+        "enrolled_students": []
+    }
+}
 enrolled_list = {}
 
 @app.route("/student", methods=["POST"])
@@ -40,6 +56,17 @@ def get_students():
             "student_mail": data["student_mail"]
         }
     return jsonify(response), 200
+
+@app.route("/courses", methods=["GET"])
+def get_courses():
+    response = {}
+    for course_id, data in courses.items():
+        response[course_id]={
+            "course_name": data["course_name"],
+            "max_students": data["max_students"],
+            "enrolled_students": data["enrolled_students"]
+        }
+    return (response)
 
 
 if __name__ == '__main__':
